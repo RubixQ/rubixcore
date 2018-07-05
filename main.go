@@ -1,14 +1,20 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/kelseyhightower/envconfig"
+	"github.com/rubixq/rubixcore/api"
 	"go.uber.org/zap"
+	"gopkg.in/mgo.v2"
 )
 
 type config struct {
-	Port   int    `envconfig:"PORT" required:"true"`
-	AppEnv string `envconfig:"APP_ENV" default:"development"`
-	SQLDSN string `envconfig:"SQL_DSN" required:"true"`
+	Port     int    `envconfig:"PORT" required:"true"`
+	AppEnv   string `envconfig:"APP_ENV" default:"development"`
+	MongoDSN string `envconfig:"MONGO_DSN" required:"true"`
 }
 
 func loadConfig() (*config, error) {
@@ -38,5 +44,22 @@ func main() {
 		panic(err)
 	}
 
-	logger.Info("Application configuration loaded successfully", zap.Any("appConfig", env))
+	logger.Info("application configuration loaded successfully", zap.Any("appConfig", env))
+
+	_, err = mgo.Dial(env.MongoDSN)
+	if err != nil {
+		logger.Error("failed dialing mongo db connection", zap.Any("error", err))
+		panic(err)
+	}
+
+	r := api.InitRoutes()
+
+	s := &http.Server{
+		Addr:    fmt.Sprintf(":%d", env.Port),
+		Handler: r,
+	}
+
+	logger.Info("Server listening on : ", zap.Int("port", env.Port))
+	log.Panic(s.ListenAndServe())
+
 }

@@ -24,3 +24,11 @@
 [[constraint]]
   name = "go.uber.org/zap"
   version = "1.8.0"
+
+[[constraint]]
+  name = "github.com/go-chi/chi"
+  version = "3.3.2"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/mgo.v2"
