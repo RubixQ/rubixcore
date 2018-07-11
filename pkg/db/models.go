@@ -10,4 +10,5 @@ type Queue struct {
 	Name        string        `bson:"name,omitempty" json:"name,omitempty"`
 	Description string        `bson:"description,omitempty" json:"description,omitempty"`
 	Title       string        `bson:"title,omitempty" json:"title,omitempty"`
+	Active      bool          `bson:"active,omitempty" json:"active,omitempty"`
 }

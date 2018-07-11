@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -36,7 +37,10 @@ func createQueue(l *zap.Logger, s *mgo.Session) http.HandlerFunc {
 		}
 
 		session := s.Copy()
-		defer s.Close()
+		defer session.Close()
+
+		queue.Active = true
+		queue.Title = strings.ToUpper(strings.Replace(queue.Name, " ", "", -1))
 
 		err = session.DB("rubixcore").C("queues").Insert(queue)
 		if err != nil {
