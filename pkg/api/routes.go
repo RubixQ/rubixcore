@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/rubixq/rubixcore/pkg/db"
 	"github.com/rubixq/rubixcore/pkg/db/repo"
-
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2"
-
-	"github.com/go-chi/chi"
 )
 
 // InitRoutes initializes routes
