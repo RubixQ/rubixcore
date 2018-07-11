@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/rubixq/rubixcore/api"
+	"github.com/rubixq/rubixcore/pkg/api"
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2"
 )
@@ -46,20 +46,24 @@ func main() {
 
 	logger.Info("application configuration loaded successfully", zap.Any("appConfig", env))
 
-	_, err = mgo.Dial(env.MongoDSN)
+	session, err := mgo.Dial(env.MongoDSN)
 	if err != nil {
 		logger.Error("failed dialing mongo db connection", zap.Any("error", err))
 		panic(err)
 	}
 
-	r := api.InitRoutes()
+	routes := api.InitRoutes(logger, session)
 
-	s := &http.Server{
-		Addr:    fmt.Sprintf(":%d", env.Port),
-		Handler: r,
+	server := &http.Server{
+		Addr:              fmt.Sprintf(":%d", env.Port),
+		ReadHeaderTimeout: 30 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		Handler:           routes,
 	}
 
 	logger.Info("Server listening on : ", zap.Int("port", env.Port))
-	log.Panic(s.ListenAndServe())
-
+	if err = server.ListenAndServe(); err != nil {
+		panic(err)
+	}
 }
