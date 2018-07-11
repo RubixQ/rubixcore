@@ -3,11 +3,9 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
-
-	"gopkg.in/mgo.v2/bson"
 
 	"github.com/rubixq/rubixcore/pkg/db"
+	"github.com/rubixq/rubixcore/pkg/db/repo"
 
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2"
@@ -26,11 +24,9 @@ func InitRoutes(l *zap.Logger, s *mgo.Session) http.Handler {
 
 func createQueue(l *zap.Logger, s *mgo.Session) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		queue := db.Queue{
-			ID: bson.NewObjectId(),
-		}
+		queue := new(db.Queue)
 
-		err := json.NewDecoder(r.Body).Decode(&queue)
+		err := json.NewDecoder(r.Body).Decode(queue)
 		if err != nil {
 			l.Error("failed decoding request payload", zap.Any("error", err))
 			return
@@ -39,10 +35,9 @@ func createQueue(l *zap.Logger, s *mgo.Session) http.HandlerFunc {
 		session := s.Copy()
 		defer session.Close()
 
-		queue.Active = true
-		queue.Title = strings.ToUpper(strings.Replace(queue.Name, " ", "", -1))
+		repo := repo.NewQueueRepo(session)
 
-		err = session.DB("rubixcore").C("queues").Insert(queue)
+		queue, err = repo.Create(queue)
 		if err != nil {
 			l.Error("failed inserting queue", zap.Any("error", err))
 			return
@@ -57,9 +52,10 @@ func listQueues(l *zap.Logger, s *mgo.Session) http.HandlerFunc {
 		session := s.Copy()
 		defer session.Close()
 
-		var queues []db.Queue
+		repo := repo.NewQueueRepo(session)
 
-		err := session.DB("rubixcore").C("queues").Find(nil).All(&queues)
+		queues, err := repo.FindAll()
+
 		if err != nil {
 			l.Error("failed fetching queues from db", zap.Any("error", err))
 			InternalServerError(w)
