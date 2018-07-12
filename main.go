@@ -7,6 +7,7 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rubixq/rubixcore/pkg/api"
+	"github.com/rubixq/rubixcore/pkg/db"
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2"
 )
@@ -52,7 +53,13 @@ func main() {
 		panic(err)
 	}
 
-	routes := api.InitRoutes(logger, session)
+	err = db.InitDB(session)
+	if err != nil {
+		logger.Error("failed initializing db", zap.Any("error", err))
+		panic(err)
+	}
+
+	routes := api.InitRoutes(session, logger)
 
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", env.Port),

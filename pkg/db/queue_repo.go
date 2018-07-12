@@ -1,10 +1,9 @@
-package repo
+package db
 
 import (
 	"strings"
 	"time"
 
-	"github.com/rubixq/rubixcore/pkg/db"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -19,8 +18,8 @@ type QueueRepo struct {
 // NewQueueRepo constructs and returns a pointer to a new QueueRepo
 func NewQueueRepo(s *mgo.Session) *QueueRepo {
 	qr := QueueRepo{
-		database:   RubixDatabase,
-		collection: QueuesCollection,
+		database:   databaseName,
+		collection: queuesCollectionName,
 	}
 
 	qr.session = s
@@ -29,7 +28,7 @@ func NewQueueRepo(s *mgo.Session) *QueueRepo {
 }
 
 // Create persists a new Queue into the db
-func (r *QueueRepo) Create(q *db.Queue) (*db.Queue, error) {
+func (r *QueueRepo) Create(q *Queue) (*Queue, error) {
 	q.ID = bson.NewObjectId()
 	q.Title = strings.ToUpper(strings.Replace(q.Name, " ", "", -1))
 	q.Active = true
@@ -44,8 +43,8 @@ func (r *QueueRepo) Create(q *db.Queue) (*db.Queue, error) {
 }
 
 // FindAll returns a list of all queues from the db
-func (r *QueueRepo) FindAll() ([]db.Queue, error) {
-	var queues []db.Queue
+func (r *QueueRepo) FindAll() ([]Queue, error) {
+	var queues []Queue
 
 	err := r.session.DB(r.database).C(r.collection).Find(nil).All(&queues)
 	if err != nil {
