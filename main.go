@@ -12,64 +12,61 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-type config struct {
+// Env defines data to be loaded from environment variables
+var Env = struct {
 	Port     int    `envconfig:"PORT" required:"true"`
 	AppEnv   string `envconfig:"APP_ENV" default:"development"`
 	MongoDSN string `envconfig:"MONGO_DSN" required:"true"`
+}{}
+
+func init() {
+	err := envconfig.Process("RUBIXCORE", &Env)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func loadConfig() (*config, error) {
-	c := new(config)
-	err := envconfig.Process("rubixcore", c)
-	if err != nil {
-		return nil, err
+func initLogger(target string) (*zap.Logger, error) {
+	if target == "production" {
+		return zap.NewProduction()
 	}
 
-	return c, nil
+	return zap.NewDevelopment()
 }
 
 func main() {
-	env, err := loadConfig()
+	logger, err := initLogger(Env.AppEnv)
 	if err != nil {
 		panic(err)
 	}
 
-	var logger *zap.Logger
-	if env.AppEnv == "production" {
-		logger, err = zap.NewProduction()
-	} else {
-		logger, err = zap.NewDevelopment()
+	if Env.AppEnv == "development" {
+		logger.Info("application configuration loaded successfully", zap.Any("appConfig", Env))
 	}
 
+	session, err := mgo.Dial(Env.MongoDSN)
 	if err != nil {
-		panic(err)
-	}
-
-	logger.Info("application configuration loaded successfully", zap.Any("appConfig", env))
-
-	session, err := mgo.Dial(env.MongoDSN)
-	if err != nil {
-		logger.Error("failed dialing mongo db connection", zap.Any("error", err))
+		logger.Error("failed dialing mongo db connection", zap.Error(err))
 		panic(err)
 	}
 
 	err = db.InitDB(session)
 	if err != nil {
-		logger.Error("failed initializing db", zap.Any("error", err))
+		logger.Error("failed initializing db", zap.Error(err))
 		panic(err)
 	}
 
 	routes := api.InitRoutes(session, logger)
 
 	server := &http.Server{
-		Addr:              fmt.Sprintf(":%d", env.Port),
+		Addr:              fmt.Sprintf(":%d", Env.Port),
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
 		Handler:           routes,
 	}
 
-	logger.Info("Server listening on : ", zap.Int("port", env.Port))
+	logger.Info("Server listening on : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d", Env.Port)))
 	if err = server.ListenAndServe(); err != nil {
 		panic(err)
 	}
