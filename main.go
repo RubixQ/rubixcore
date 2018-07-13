@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -66,8 +70,32 @@ func main() {
 		Handler:           routes,
 	}
 
-	logger.Info("Server listening on : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d", Env.Port)))
-	if err = server.ListenAndServe(); err != nil {
-		panic(err)
-	}
+	// Run server in a goroutine so that it doesn't block.
+	go func() {
+		logger.Info("api accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d", Env.Port)))
+		logger.Info("ws accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d/ws", Env.Port)))
+		logger.Info("ws status accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d/ws/status", Env.Port)))
+
+		if err := server.ListenAndServe(); err != nil {
+			panic(err)
+		}
+	}()
+
+	ch := make(chan os.Signal, 1)
+	// Perform graceful shutdowns when quit via SIGINT (Ctrl+C)
+	// or SIGKILL, SIGQUIT or SIGTERM (Ctrl+/)
+	signal.Notify(ch, os.Interrupt, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGTERM)
+
+	// Block until signal is received.
+	<-ch
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Doesn't block if no connections, but will otherwise wait
+	// until the timeout deadline.
+	server.Shutdown(ctx)
+	logger.Info("shutting down server")
+	os.Exit(0)
+
 }
