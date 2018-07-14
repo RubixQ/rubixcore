@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rubixq/rubixcore/pkg/api"
 	"github.com/rubixq/rubixcore/pkg/db"
@@ -60,14 +61,16 @@ func main() {
 		panic(err)
 	}
 
-	routes := api.InitRoutes(session, logger)
+	upgrader := &websocket.Upgrader{}
+	app := api.NewApp(session, logger, upgrader)
+	router := app.Router()
 
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", Env.Port),
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
-		Handler:           routes,
+		Handler:           router,
 	}
 
 	// Run server in a goroutine so that it doesn't block.

@@ -1,0 +1,14 @@
+body{
+    background-color: #fcfcfc;
+}
+.container{
+    position: absolute;
+    margin: auto;
+    top: 100px;
+    right: 0;
+    bottom: 100px;
+    left: 0;
+    width: 500px;
+    background-color: #ccc;
+    border-radius: 3px;
+}
