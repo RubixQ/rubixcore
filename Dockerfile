@@ -8,5 +8,5 @@ ADD . ${SRC_DIR}
 RUN go get -u github.com/golang/dep/cmd/dep
 WORKDIR ${SRC_DIR}
 RUN dep ensure -v
-RUN go build .
+RUN go build -race .
 ENTRYPOINT [ "./rubixcore" ]
