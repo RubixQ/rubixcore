@@ -29,6 +29,9 @@ func (a *App) Router() http.Handler {
 	r.Get("/queues", a.listQueues)
 	r.Post("/queues", a.createQueue)
 
+	r.Get("/kiosks/new", a.handleKioskSetup)
+	r.Get("/ws/kiosks", a.handleKioskRegistration)
+
 	r.Get("/ws/status", a.handleStatusCheck)
 	r.Get("/ws/test", a.handleStatusTest)
 
