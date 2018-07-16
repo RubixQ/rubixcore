@@ -16,7 +16,7 @@ type App struct {
 	session  *mgo.Session
 	logger   *zap.Logger
 	upgrader *websocket.Upgrader
-	lock     *sync.Mutex
+	lock     sync.Mutex
 	kiosks   map[string]*websocket.Conn
 	counters map[string]*websocket.Conn
 }
@@ -47,10 +47,9 @@ func NewApp(s *mgo.Session, l *zap.Logger, u *websocket.Upgrader) *App {
 		session:  s,
 		logger:   l,
 		upgrader: u,
+		kiosks:   make(map[string]*websocket.Conn),
+		counters: make(map[string]*websocket.Conn),
 	}
-
-	a.kiosks = make(map[string]*websocket.Conn)
-	a.counters = make(map[string]*websocket.Conn)
 
 	return &a
 }

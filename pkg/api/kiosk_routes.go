@@ -41,7 +41,7 @@ func (a *App) handleKioskRegistration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) handleKioskSetup(w http.ResponseWriter, r *http.Request) {
-	a.logger.Info("ws test page accessed", zap.Time("at", time.Now()))
+	a.logger.Info("kiosk test page accessed", zap.Time("at", time.Now()))
 
 	files := []string{
 		"./ui/html/base.html",
