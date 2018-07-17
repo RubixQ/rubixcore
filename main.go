@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rubixq/rubixcore/pkg/api"
@@ -70,7 +71,7 @@ func main() {
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
-		Handler:           router,
+		Handler:           handlers.CORS()(router),
 	}
 
 	// Run server in a goroutine so that it doesn't block.
