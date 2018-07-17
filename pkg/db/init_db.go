@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	databaseName         string = "rubixcore"
-	queuesCollectionName string = "queues"
+	databaseName            string = "rubixcore"
+	queuesCollectionName    string = "queues"
+	customersCollectionName string = "customers"
 )
 
 // InitDB sets db contraints and indexes

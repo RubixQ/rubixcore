@@ -24,7 +24,7 @@ func (a *App) createQueue(w http.ResponseWriter, r *http.Request) {
 
 	queue, err = repo.Create(queue)
 	if err != nil {
-		a.logger.Error("failed inserting queue", zap.Any("error", err))
+		a.logger.Error("failed inserting queue", zap.Error(err))
 		return
 	}
 

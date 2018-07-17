@@ -35,6 +35,8 @@ func (a *App) Router() http.Handler {
 	r.Get("/ws/status", a.handleStatusCheck)
 	r.Get("/ws/test", a.handleStatusTest)
 
+	r.Post("/customers", a.createCustomer)
+
 	fileServer(r, "/static", http.Dir("./ui/static"))
 
 	return r
