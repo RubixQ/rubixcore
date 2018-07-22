@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"sync"
 
 	"github.com/go-chi/chi"
 	"github.com/gorilla/websocket"
@@ -13,12 +12,11 @@ import (
 // App defines shared dependencies, request handlers,
 // and url-mappings for the API
 type App struct {
-	session  *mgo.Session
-	logger   *zap.Logger
-	upgrader *websocket.Upgrader
-	lock     sync.Mutex
-	kiosks   map[string]*websocket.Conn
-	counters map[string]*websocket.Conn
+	session    *mgo.Session
+	logger     *zap.Logger
+	upgrader   *websocket.Upgrader
+	counters   map[string]*websocket.Conn
+	nextTicket int
 }
 
 // Router returns a http.Handler with url mappings
@@ -30,7 +28,6 @@ func (a *App) Router() http.Handler {
 	r.Post("/queues", a.createQueue)
 
 	r.Get("/kiosks/new", a.handleKioskSetup)
-	r.Get("/ws/kiosks", a.handleKioskRegistration)
 
 	r.Get("/ws/status", a.handleStatusCheck)
 	r.Get("/ws/test", a.handleStatusTest)
@@ -46,40 +43,20 @@ func (a *App) Router() http.Handler {
 // and websocket upgrader properly configured and ready for use in all routes
 func NewApp(s *mgo.Session, l *zap.Logger, u *websocket.Upgrader) *App {
 	a := App{
-		session:  s,
-		logger:   l,
-		upgrader: u,
-		kiosks:   make(map[string]*websocket.Conn),
-		counters: make(map[string]*websocket.Conn),
+		session:    s,
+		logger:     l,
+		upgrader:   u,
+		counters:   make(map[string]*websocket.Conn),
+		nextTicket: 0,
 	}
 
 	return &a
 }
 
-func (a *App) addKiosk(id string, conn *websocket.Conn) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	a.kiosks[id] = conn
-}
-
-func (a *App) removeKiosk(id string) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	delete(a.kiosks, id)
-}
-
 func (a *App) addCounter(id string, conn *websocket.Conn) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
 	a.counters[id] = conn
 }
 
-func (a *App) removeCounter(id string) {
-	a.lock.Lock()
-	defer a.lock.Unlock()
-
-	delete(a.counters, id)
+func (a *App) getCounterConn(id string) *websocket.Conn {
+	return a.counters[id]
 }

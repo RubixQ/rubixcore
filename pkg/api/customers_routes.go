@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"math/rand"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -23,6 +25,8 @@ func (a *App) createCustomer(w http.ResponseWriter, r *http.Request) {
 
 	repo := db.NewCustomerRepo(session)
 
+	a.nextTicket = a.nextTicket + 1
+	customer.TicketNumber = fmt.Sprintf("%s%03d", []string{"A", "B", "C"}[rand.Intn(3)], a.nextTicket)
 	customer, err = repo.Create(customer)
 	if err != nil {
 		a.logger.Error("failed inserting customer", zap.Error(err))
@@ -30,7 +34,7 @@ func (a *App) createCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		msg := "Your ticket number is A125"
+		msg := fmt.Sprintf("Your ticket number is %s. Kindly wait patiently until your turn is announced!", customer.TicketNumber)
 		sendSMS(msg, customer.MSISDN)
 	}()
 

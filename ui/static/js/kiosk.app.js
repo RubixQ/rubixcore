@@ -133,7 +133,7 @@ class Kiosk extends React.Component {
 
     confirmSend = (value) => {
         if (value) {
-            axios.post("http://192.168.178.51:5000/customers", { msisdn: this.state.phoneNumber, queueId: this.state.clickedQueueId, queueName: this.state.queueName })
+            axios.post("http://192.168.178.62:5000/customers", { msisdn: this.state.phoneNumber, queueId: this.state.clickedQueueId, queueName: this.state.queueName })
             .then((res) => {
                 console.log(res);
             })
@@ -162,7 +162,7 @@ class Kiosk extends React.Component {
     }
 
     componentDidMount() {
-        axios.get("http://192.168.178.51:5000/queues")
+        axios.get("http://192.168.178.62:5000/queues")
             .then((res) => {
                 this.setState({ queues: res.data.data })
                 console.log(this.state.queues)
