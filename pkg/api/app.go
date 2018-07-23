@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/go-chi/chi"
 	"github.com/gorilla/websocket"
@@ -15,6 +16,7 @@ type App struct {
 	session    *mgo.Session
 	logger     *zap.Logger
 	upgrader   *websocket.Upgrader
+	mu         sync.Mutex
 	counters   map[string]*websocket.Conn
 	nextTicket int
 }
@@ -37,6 +39,13 @@ func (a *App) Router() http.Handler {
 	fileServer(r, "/static", http.Dir("./ui/static"))
 
 	return r
+}
+
+// ResetTicketing resets nextTicket
+func (a *App) ResetTicketing() {
+	a.mu.Lock()
+	a.nextTicket = 0
+	a.mu.Unlock()
 }
 
 // NewApp returns a pointer to a new app with session and logger

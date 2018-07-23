@@ -20,9 +20,11 @@ import (
 
 // Env defines data to be loaded from environment variables
 var Env = struct {
-	Port     int    `envconfig:"PORT" required:"true"`
-	AppEnv   string `envconfig:"APP_ENV" default:"development"`
-	MongoDSN string `envconfig:"MONGO_DSN" required:"true"`
+	Port                int    `envconfig:"PORT" required:"true"`
+	AppEnv              string `envconfig:"APP_ENV" default:"development"`
+	MongoDSN            string `envconfig:"MONGO_DSN" required:"true"`
+	RedisURL            string `envconfig:"REDIS_URL" required:"true"`
+	TicketResetInterval int    `envconfig:"TICKET_RESET_INTERVAL" required:"true"`
 }{}
 
 func init() {
@@ -83,6 +85,16 @@ func main() {
 
 		if err := server.ListenAndServe(); err != nil {
 			panic(err)
+		}
+	}()
+
+	// Sets a timer to reset the ticket number generation after n hours
+	// as specified in Env.TicketResetInterval
+	ticker := time.NewTicker(time.Duration(Env.TicketResetInterval) * time.Hour)
+	go func() {
+		for now := range ticker.C {
+			logger.Info("resetting ticket numbering", zap.Time("at", now))
+			app.ResetTicketing()
 		}
 	}()
 
