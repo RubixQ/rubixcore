@@ -69,20 +69,22 @@
   revision = "9856a29383ce1c59f308dd1cf0363a79b5bef6b5"
 
 [[projects]]
-  name = "gopkg.in/redis.v3"
+  name = "gopkg.in/redis.v4"
   packages = [
     ".",
     "internal",
     "internal/consistenthash",
+    "internal/errors",
     "internal/hashtag",
-    "internal/pool"
+    "internal/pool",
+    "internal/proto"
   ]
-  revision = "b5e368500d0a508ef8f16e9c2d4025a8a46bcc29"
-  version = "v3.6.4"
+  revision = "c938162545c57136fa59879746bc65d0f1db3d1e"
+  version = "v4.2.4"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9aeced8b49c283d5ce9e6bc89a2fabf8c98652896202307d6dcf39d762e517b2"
+  inputs-digest = "ee4ddcfc464fb0681681b28688e476d63a4cb8838731b984cf85b6bb5bb5d7f5"
   solver-name = "gps-cdcl"
   solver-version = 1

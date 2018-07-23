@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/redis.v3"
+	"gopkg.in/redis.v4"
 )
 
 // App defines shared dependencies, request handlers,

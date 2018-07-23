@@ -16,7 +16,7 @@ import (
 	"github.com/rubixq/rubixcore/pkg/db"
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2"
-	"gopkg.in/redis.v3"
+	"gopkg.in/redis.v4"
 )
 
 // Env defines data to be loaded from environment variables

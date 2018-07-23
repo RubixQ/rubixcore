@@ -6,9 +6,8 @@ import (
 	"math/rand"
 	"net/http"
 
-	"go.uber.org/zap"
-
 	"github.com/rubixq/rubixcore/pkg/db"
+	"go.uber.org/zap"
 )
 
 func (a *App) createCustomer(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +31,8 @@ func (a *App) createCustomer(w http.ResponseWriter, r *http.Request) {
 		a.logger.Error("failed inserting customer", zap.Error(err))
 		return
 	}
+
+	a.redis.LPush(customer.QueueID, customer.TicketNumber)
 
 	go func() {
 		msg := fmt.Sprintf("Your ticket number is %s. Kindly wait patiently until your turn is announced!", customer.TicketNumber)
