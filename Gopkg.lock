@@ -51,6 +51,12 @@
   version = "v1.8.0"
 
 [[projects]]
+  branch = "v1"
+  name = "gopkg.in/bsm/ratelimit.v1"
+  packages = ["."]
+  revision = "db14e161995a5177acef654cb0dd785e8ee8bc22"
+
+[[projects]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
   packages = [
@@ -62,9 +68,21 @@
   ]
   revision = "9856a29383ce1c59f308dd1cf0363a79b5bef6b5"
 
+[[projects]]
+  name = "gopkg.in/redis.v3"
+  packages = [
+    ".",
+    "internal",
+    "internal/consistenthash",
+    "internal/hashtag",
+    "internal/pool"
+  ]
+  revision = "b5e368500d0a508ef8f16e9c2d4025a8a46bcc29"
+  version = "v3.6.4"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f87da018b02f464f9b802f5c60493a79fe04685b11e980f0820e271fd11cb3aa"
+  inputs-digest = "9aeced8b49c283d5ce9e6bc89a2fabf8c98652896202307d6dcf39d762e517b2"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -8,12 +8,14 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/redis.v3"
 )
 
 // App defines shared dependencies, request handlers,
 // and url-mappings for the API
 type App struct {
 	session    *mgo.Session
+	redis      *redis.Client
 	logger     *zap.Logger
 	upgrader   *websocket.Upgrader
 	mu         sync.Mutex
@@ -50,9 +52,10 @@ func (a *App) ResetTicketing() {
 
 // NewApp returns a pointer to a new app with session and logger
 // and websocket upgrader properly configured and ready for use in all routes
-func NewApp(s *mgo.Session, l *zap.Logger, u *websocket.Upgrader) *App {
+func NewApp(s *mgo.Session, c *redis.Client, l *zap.Logger, u *websocket.Upgrader) *App {
 	a := App{
 		session:    s,
+		redis:      c,
 		logger:     l,
 		upgrader:   u,
 		counters:   make(map[string]*websocket.Conn),

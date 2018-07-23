@@ -16,6 +16,7 @@ import (
 	"github.com/rubixq/rubixcore/pkg/db"
 	"go.uber.org/zap"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/redis.v3"
 )
 
 // Env defines data to be loaded from environment variables
@@ -64,8 +65,21 @@ func main() {
 		panic(err)
 	}
 
+	client := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := client.Ping().Result()
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Info("redis connection setup successfully", zap.Any("pong", pong))
+
 	upgrader := &websocket.Upgrader{}
-	app := api.NewApp(session, logger, upgrader)
+	app := api.NewApp(session, client, logger, upgrader)
 	router := app.Router()
 
 	server := &http.Server{
