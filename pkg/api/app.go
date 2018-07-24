@@ -31,12 +31,15 @@ func (a *App) Router() http.Handler {
 	r.Get("/queues", a.listQueues)
 	r.Post("/queues", a.createQueue)
 
-	r.Get("/kiosks/new", a.handleKioskSetup)
-
-	r.Get("/ws/status", a.handleStatusCheck)
-	r.Get("/ws/test", a.handleStatusTest)
-
+	r.Get("/customers", a.listCustomers)
 	r.Post("/customers", a.createCustomer)
+
+	r.Post("/actions/next", a.callNextCustomer)
+
+	r.Get("/kiosks/new", a.handleKioskSetup)
+	r.Get("/counters/new", a.handleCounterSetup)
+
+	r.Get("/ws", a.handleCounterWebsocket)
 
 	fileServer(r, "/static", http.Dir("./ui/static"))
 
@@ -58,7 +61,6 @@ func NewApp(s *mgo.Session, c *redis.Client, l *zap.Logger, u *websocket.Upgrade
 		redis:      c,
 		logger:     l,
 		upgrader:   u,
-		counters:   make(map[string]*websocket.Conn),
 		nextTicket: 0,
 	}
 
@@ -66,6 +68,9 @@ func NewApp(s *mgo.Session, c *redis.Client, l *zap.Logger, u *websocket.Upgrade
 }
 
 func (a *App) addCounter(id string, conn *websocket.Conn) {
+	if a.counters == nil {
+		a.counters = make(map[string]*websocket.Conn)
+	}
 	a.counters[id] = conn
 }
 

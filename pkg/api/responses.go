@@ -3,12 +3,9 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-)
 
-type wsPayload struct {
-	ptype string      `json:"ptype"`
-	data  interface{} `json:"data"`
-}
+	"github.com/gorilla/websocket"
+)
 
 // Ok is a helper for sending api response
 func Ok(w http.ResponseWriter, data interface{}) {
@@ -36,4 +33,9 @@ func renderJSON(w http.ResponseWriter, data interface{}) error {
 	}
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+// WriteToConn sends payload over ws connection
+func WriteToConn(conn *websocket.Conn, payload WSPayload) {
+	conn.WriteJSON(payload)
 }

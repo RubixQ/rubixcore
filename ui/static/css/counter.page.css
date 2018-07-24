@@ -1,0 +1,23 @@
+.counter-container{
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+}
+
+.ticket-display{
+    flex: 8;
+    background-color: #FFFFFF;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+
+.counter-display{
+    flex: 2;
+    display: flex;
+    background-color: #143677;
+    justify-content: center; 
+    align-items: center;
+    color: #FFFFFF;
+}

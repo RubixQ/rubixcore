@@ -12,7 +12,7 @@ type Queue struct {
 	Name        string        `bson:"name,omitempty" json:"name,omitempty"`
 	Description string        `bson:"description,omitempty" json:"description,omitempty"`
 	Title       string        `bson:"title,omitempty" json:"title,omitempty"`
-	Active      bool          `bson:"active,omitempty" json:"active,omitempty"`
+	IsActive    bool          `bson:"isActive,omitempty" json:"isActive,omitempty"`
 	CreatedAt   time.Time     `bson:"createdAt,omitempty" json:"createdAt,omitempty"`
 	UpdatedAt   time.Time     `bson:"updatedAt,omitempty" json:"updatedAt,omitempty"`
 }
@@ -22,8 +22,9 @@ type Customer struct {
 	ID           bson.ObjectId `bson:"id,omitempty" json:"id,omitempty"`
 	MSISDN       string        `bson:"msisdn,omitempty" json:"msisdn,omitempty"`
 	QueueID      string        `bson:"queueId,omitempty" json:"queueId,omitempty"`
-	QueueName    string        `bson:"queueName,omitempty" json:"queueName,omitempty"`
 	TicketNumber string        `bson:"ticketNumber,omitempty" json:"ticketNumber,omitempty"`
+	IsServed     bool          `bson:"isServed,omitempty" json:"isServed,omitempty"`
+	ServedAt     time.Time     `bson:"servedAt,omitempty" json:"servedAt,omitempty"`
 	CreatedAt    time.Time     `bson:"createdAt,omitempty" json:"createdAt,omitempty"`
 	UpdatedAt    time.Time     `bson:"updatedAt,omitempty" json:"updatedAt,omitempty"`
 }

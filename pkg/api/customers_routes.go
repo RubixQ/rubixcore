@@ -13,7 +13,7 @@ import (
 func (a *App) createCustomer(w http.ResponseWriter, r *http.Request) {
 	customer := new(db.Customer)
 
-	err := json.NewDecoder(r.Body).Decode(customer)
+	err := json.NewDecoder(r.Body).Decode(&customer)
 	if err != nil {
 		a.logger.Error("failed decoding request payload", zap.Error(err))
 		return
@@ -32,7 +32,12 @@ func (a *App) createCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.redis.LPush(customer.QueueID, customer.TicketNumber)
+	data, err := json.Marshal(customer)
+	if err != nil {
+		a.logger.Error("failed serializing customer data", zap.Error(err))
+		return
+	}
+	a.redis.LPush(customer.QueueID, string(data))
 
 	go func() {
 		msg := fmt.Sprintf("Your ticket number is %s. Kindly wait patiently until your turn is announced!", customer.TicketNumber)
@@ -40,4 +45,22 @@ func (a *App) createCustomer(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	Ok(w, customer)
+}
+
+func (a *App) listCustomers(w http.ResponseWriter, r *http.Request) {
+	session := a.session.Copy()
+	defer session.Close()
+
+	repo := db.NewCustomerRepo(session)
+
+	customers, err := repo.FindAll()
+
+	if err != nil {
+		a.logger.Error("failed fetching customers from db", zap.Any("error", err))
+		InternalServerError(w)
+		return
+	}
+
+	Ok(w, customers)
+
 }

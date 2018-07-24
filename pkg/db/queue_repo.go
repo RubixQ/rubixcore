@@ -31,7 +31,7 @@ func NewQueueRepo(s *mgo.Session) *QueueRepo {
 func (r *QueueRepo) Create(q *Queue) (*Queue, error) {
 	q.ID = bson.NewObjectId()
 	q.Title = strings.ToUpper(strings.Replace(q.Name, " ", "", -1))
-	q.Active = true
+	q.IsActive = true
 	q.CreatedAt = time.Now()
 
 	err := r.session.DB(r.database).C(r.collection).Insert(q)

@@ -38,3 +38,15 @@ func (r *CustomerRepo) Create(c *Customer) (*Customer, error) {
 
 	return c, nil
 }
+
+// FindAll returns a list of all customers from the db
+func (r *CustomerRepo) FindAll() ([]Customer, error) {
+	var customers []Customer
+
+	err := r.session.DB(r.database).C(r.collection).Find(nil).All(&customers)
+	if err != nil {
+		return nil, err
+	}
+
+	return customers, nil
+}
