@@ -93,9 +93,6 @@ func main() {
 	// Run server in a goroutine so that it doesn't block.
 	go func() {
 		logger.Info("api accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d", Env.Port)))
-		logger.Info("ws accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d/ws", Env.Port)))
-		logger.Info("ws test accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d/ws/test", Env.Port)))
-		logger.Info("ws status accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d/ws/status", Env.Port)))
 
 		if err := server.ListenAndServe(); err != nil {
 			panic(err)

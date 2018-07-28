@@ -35,7 +35,7 @@ func (a *App) handleCounterWebsocket(w http.ResponseWriter, r *http.Request) {
 	payload := CounterRegPayload{}
 	conn, err := a.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		a.logger.Info("failed upgrading to ws connection", zap.Error(err))
+		a.logger.Error("failed upgrading to ws connection", zap.Error(err))
 		return
 	}
 

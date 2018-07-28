@@ -49,8 +49,8 @@ func (a *App) Router() http.Handler {
 // ResetTicketing resets nextTicket
 func (a *App) ResetTicketing() {
 	a.mu.Lock()
+	defer a.mu.Unlock()
 	a.nextTicket = 0
-	a.mu.Unlock()
 }
 
 // NewApp returns a pointer to a new app with session and logger
