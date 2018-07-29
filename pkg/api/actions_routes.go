@@ -49,6 +49,17 @@ func (a *App) callNextCustomer(w http.ResponseWriter, r *http.Request) {
 		a.logger.Info("next command", zap.String("command", msg))
 	}()
 
+	go func() {
+		if a.voiceSvr != nil {
+			command := WSPayload{PayloadType: "command", Data: msg}
+			a.logger.Info("sending ws voice command", zap.Any("command", command))
+			WriteToConn(a.voiceSvr, command)
+		} else {
+			a.logger.Warn("no active voice server connection")
+		}
+
+	}()
+
 	Ok(w, struct {
 		QueueID    string `json:"queueID"`
 		CounterID  string `json:"counterID"`

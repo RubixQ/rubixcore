@@ -20,6 +20,7 @@ type App struct {
 	upgrader   *websocket.Upgrader
 	mu         sync.Mutex
 	counters   map[string]*websocket.Conn
+	voiceSvr   *websocket.Conn
 	nextTicket int
 }
 
@@ -36,10 +37,11 @@ func (a *App) Router() http.Handler {
 
 	r.Post("/actions/next", a.callNextCustomer)
 
-	r.Get("/kiosks/new", a.handleKioskSetup)
-	r.Get("/counters/new", a.handleCounterSetup)
+	// r.Get("/kiosks/new", a.handleKioskSetup)
+	// r.Get("/counters/new", a.handleCounterSetup)
 
 	r.Get("/ws", a.handleCounterWebsocket)
+	r.Get("/voicews", a.handleVoiceWebsocket)
 
 	fileServer(r, "/static", http.Dir("./ui/static"))
 

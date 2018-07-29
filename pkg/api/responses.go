@@ -26,13 +26,13 @@ func renderJSON(w http.ResponseWriter, data interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	response := struct {
-		Data interface{} `json:"data"`
-	}{
-		data,
-	}
+	// response := struct {
+	// 	Data interface{} `json:"data"`
+	// }{
+	// 	data,
+	// }
 
-	return json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(data)
 }
 
 // WriteToConn sends payload over ws connection

@@ -44,6 +44,8 @@ func (a *App) handleCounterWebsocket(w http.ResponseWriter, r *http.Request) {
 		a.logger.Error("failed reading counter registration payload", zap.Error(err))
 	}
 
+	a.logger.Info("ws connection accepted ", zap.Any("payload", payload))
+
 	a.addCounter(payload.CounterID, conn)
 
 	conn.WriteJSON(
