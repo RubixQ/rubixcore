@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -82,20 +83,36 @@ func main() {
 	app := api.NewApp(session, client, logger, upgrader)
 	router := app.Router()
 
+	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", Env.Port))
+	if err != nil {
+		logger.Fatal("failed binding to port", zap.Int("port", Env.Port))
+	}
+	defer listener.Close()
+
+	url := fmt.Sprintf("http://%s", listener.Addr())
+	logger.Info("server listening on ", zap.String("url", url))
+
 	server := &http.Server{
-		Addr:              fmt.Sprintf(":%d", Env.Port),
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
 		Handler:           handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(router),
 	}
 
-	// Run server in a goroutine so that it doesn't block.
-	go func() {
-		logger.Info("api accessible from : ", zap.Any("url", fmt.Sprintf("http://0.0.0.0:%d", Env.Port)))
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-		if err := server.ListenAndServe(); err != nil {
-			panic(err)
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		defer close(idleConnsClosed)
+
+		recv := <-sigs
+		logger.Info("received signal, shutting down", zap.Any("signal", recv.String))
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(ctx); err != nil {
+			logger.Warn("error shutting down server", zap.Error(err))
 		}
 	}()
 
@@ -103,27 +120,21 @@ func main() {
 	// as specified in Env.TicketResetInterval
 	ticker := time.NewTicker(time.Duration(Env.TicketResetInterval) * time.Hour)
 	go func() {
-		for now := range ticker.C {
-			logger.Info("resetting ticket numbering", zap.Time("at", now))
+		for range ticker.C {
+			logger.Info("resetting ticket numbering")
 			app.ResetTicketing()
 		}
 	}()
 
-	ch := make(chan os.Signal, 1)
-	// Perform graceful shutdowns when quit via SIGINT (Ctrl+C)
-	// or SIGKILL, SIGQUIT or SIGTERM (Ctrl+/)
-	signal.Notify(ch, os.Interrupt, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGTERM)
+	if err := server.Serve(listener); err != nil {
+		if err != http.ErrServerClosed {
+			logger.Fatal("http.Serve returned an error",
+				zap.Error(err),
+			)
+		}
+	}
 
-	// Block until signal is received.
-	<-ch
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Doesn't block if no connections, but will otherwise wait
-	// until the timeout deadline.
-	server.Shutdown(ctx)
-	logger.Info("shutting down server")
-	os.Exit(0)
-
+	// Waits for all idle connections to be closed during shutdown
+	<-idleConnsClosed
+	logger.Info("server shutdown successfully")
 }
