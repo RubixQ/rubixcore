@@ -13,7 +13,7 @@ func (a *App) handleVoiceWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.voiceSvr = conn
+	a.voiceSrvConn = conn
 
 	conn.WriteJSON(
 		WSPayload{

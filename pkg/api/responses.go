@@ -2,19 +2,21 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 )
 
-// Ok is a helper for sending api response
-func Ok(w http.ResponseWriter, data interface{}) {
+// RenderOk is a helper for sending api response
+func RenderOk(w http.ResponseWriter, data interface{}) {
 	_ = renderJSON(w, data)
 }
 
-// BadRequest is a helpfer for sending api response
-func BadRequest(w http.ResponseWriter) {
-
+// RenderBadRequest is a helpfer for sending api response
+func RenderBadRequest(w http.ResponseWriter, err error) {
+	http.Error(w, fmt.Sprintf("{'error': %s}", err.Error()), http.StatusBadRequest)
+	return
 }
 
 // InternalServerError is a helper for sending api response

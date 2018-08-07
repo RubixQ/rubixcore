@@ -6,6 +6,17 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// User defines model for system users
+type User struct {
+	ID        bson.ObjectId `bson:"id,omitempty" json:"id,omitempty"`
+	Username  string        `bson:"username,omitempty" json:"username,omitempty"`
+	Password  string        `bson:"password,omitempty" json:"-"`
+	IsAdmin   bool          `bson:"isAdmin,omitempty" json:"isAdmin,omitempty"`
+	IsActive  bool          `bson:"isActive,omitempty" json:"isActive,omitempty"`
+	CreatedAt time.Time     `bson:"createdAt,omitempty" json:"createdAt,omitempty"`
+	UpdatedAt time.Time     `bson:"updatedAt,omitempty" json:"updatedAt,omitempty"`
+}
+
 // Queue defines model for queues
 type Queue struct {
 	ID          bson.ObjectId `bson:"id,omitempty" json:"id,omitempty"`

@@ -22,11 +22,15 @@ import (
 
 // Env defines data to be loaded from environment variables
 var Env = struct {
-	Port                int    `envconfig:"PORT" required:"true"`
-	AppEnv              string `envconfig:"APP_ENV" default:"development"`
-	MongoDSN            string `envconfig:"MONGO_DSN" required:"true"`
-	RedisURL            string `envconfig:"REDIS_URL" required:"true"`
-	TicketResetInterval int    `envconfig:"TICKET_RESET_INTERVAL" required:"true"`
+	Port                 int    `envconfig:"PORT" required:"true"`
+	AppEnv               string `envconfig:"APP_ENV" default:"development"`
+	MongoDSN             string `envconfig:"MONGO_DSN" required:"true"`
+	RedisURL             string `envconfig:"REDIS_URL" required:"true"`
+	TicketResetInterval  int    `envconfig:"TICKET_RESET_INTERVAL" required:"true"`
+	JWTIssuer            string `envconfig:"JWT_ISSUER" required:"true"`
+	JWTSecret            string `envconfig:"JWT_SECRET" required:"true"`
+	DefaultAdminUsername string `envconfig:"DEFAULT_ADMIN_USERNAME" required:"true"`
+	DefaultAdminPassword string `envconfig:"DEFAULT_ADMIN_PASSWORD" required:"true"`
 }{}
 
 func init() {
@@ -60,7 +64,7 @@ func main() {
 		panic(err)
 	}
 
-	err = db.InitDB(session)
+	err = db.InitDB(session, Env.DefaultAdminUsername, Env.DefaultAdminPassword)
 	if err != nil {
 		logger.Error("failed initializing db", zap.Error(err))
 		panic(err)
@@ -77,10 +81,10 @@ func main() {
 		panic(err)
 	}
 
-	logger.Info("redis connection setup successfully", zap.Any("pong", pong))
+	logger.Info("redis connection setup successfully", zap.Any("ping", pong))
 
 	upgrader := &websocket.Upgrader{}
-	app := api.NewApp(session, client, logger, upgrader)
+	app := api.NewApp(session, client, logger, upgrader, Env.JWTIssuer, Env.JWTSecret)
 	router := app.Router()
 
 	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", Env.Port))
