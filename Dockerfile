@@ -2,7 +2,7 @@ FROM golang:latest
 LABEL author="Edward Pie"
 ENV RUBIXCORE_PORT=5000
 ENV RUBIXCORE_APP_ENV=development
-ENV RUBIXCORE_MONGO_DSN=db
+ENV RUBIXCORE_POSTGRES_DSN="host=db port=5432 user=postgres password=rub1xc0r3 dbname=postgres sslmode=disable"
 ENV RUBIXCORE_REDIS_URL=redis
 ENV RUBIXCORE_TICKET_RESET_INTERVAL=12
 ENV RUBIXCORE_JWT_ISSUER=rubixcore

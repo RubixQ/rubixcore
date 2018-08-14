@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net"
 	"net/http"
@@ -13,10 +14,9 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
+	_ "github.com/lib/pq"
 	"github.com/rubixq/rubixcore/pkg/api"
-	"github.com/rubixq/rubixcore/pkg/db"
 	"go.uber.org/zap"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/redis.v4"
 )
 
@@ -24,7 +24,7 @@ import (
 var Env = struct {
 	Port                 int    `envconfig:"PORT" required:"true"`
 	AppEnv               string `envconfig:"APP_ENV" default:"development"`
-	MongoDSN             string `envconfig:"MONGO_DSN" required:"true"`
+	PostgresDSN          string `envconfig:"POSTGRES_DSN" required:"true"`
 	RedisURL             string `envconfig:"REDIS_URL" required:"true"`
 	TicketResetInterval  int    `envconfig:"TICKET_RESET_INTERVAL" required:"true"`
 	JWTIssuer            string `envconfig:"JWT_ISSUER" required:"true"`
@@ -51,24 +51,23 @@ func initLogger(target string) (*zap.Logger, error) {
 func main() {
 	logger, err := initLogger(Env.AppEnv)
 	if err != nil {
-		panic(err)
+		logger.Fatal("failed initializing logger", zap.Error(err))
 	}
 
 	if Env.AppEnv == "development" {
-		logger.Info("application configuration loaded successfully", zap.Any("appConfig", Env))
+		logger.Info("application configuration loaded successfully")
 	}
 
-	session, err := mgo.Dial(Env.MongoDSN)
+	db, err := sql.Open("postgres", Env.PostgresDSN)
 	if err != nil {
-		logger.Error("failed dialing mongo db connection", zap.Error(err))
-		panic(err)
+		logger.Fatal("failed preparing db abstraction", zap.Error(err))
 	}
 
-	err = db.InitDB(session, Env.DefaultAdminUsername, Env.DefaultAdminPassword)
+	err = db.Ping()
 	if err != nil {
-		logger.Error("failed initializing db", zap.Error(err))
-		panic(err)
+		logger.Fatal("failed pinging underlying db", zap.Error(err))
 	}
+	defer db.Close()
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
@@ -78,13 +77,13 @@ func main() {
 
 	pong, err := client.Ping().Result()
 	if err != nil {
-		panic(err)
+		logger.Fatal("failed pinging redis instance", zap.Error(err))
 	}
 
 	logger.Info("redis connection setup successfully", zap.Any("ping", pong))
 
 	upgrader := &websocket.Upgrader{}
-	app := api.NewApp(session, client, logger, upgrader, Env.JWTIssuer, Env.JWTSecret)
+	app := api.NewApp(db, client, logger, upgrader, Env.JWTIssuer, Env.JWTSecret)
 	router := app.Router()
 
 	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", Env.Port))

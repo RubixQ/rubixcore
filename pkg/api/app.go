@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 	"sync"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
-	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/redis.v4"
 )
 
@@ -44,7 +44,7 @@ func init() {
 // App defines shared dependencies, request handlers,
 // and url-mappings for the API
 type App struct {
-	session      *mgo.Session
+	db           *sql.DB
 	redis        *redis.Client
 	logger       *zap.Logger
 	upgrader     *websocket.Upgrader
@@ -97,9 +97,9 @@ func (a *App) ResetTicketing() {
 
 // NewApp returns a pointer to a new app with session and logger
 // and websocket upgrader properly configured and ready for use in all routes
-func NewApp(s *mgo.Session, c *redis.Client, l *zap.Logger, u *websocket.Upgrader, issuer, secret string) *App {
+func NewApp(db *sql.DB, c *redis.Client, l *zap.Logger, u *websocket.Upgrader, issuer, secret string) *App {
 	a := App{
-		session:    s,
+		db:         db,
 		redis:      c,
 		logger:     l,
 		upgrader:   u,

@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports: 
-      - "5000:5000"
+      - 5000:5000
     depends_on: 
       - redis
       - db
@@ -12,15 +12,12 @@ services:
   redis:
     image: redis
   db:
-    image: mysql:latest
+    image: postgres
     restart: always
     ports:
-      - 3306:3306
+      - 5432:5432
     environment:
-      MYSQL_ROOT_PASSWORD: p@554my5ql@dm1n
-      MYSQL_DATABASE: flyawa
-      MYSQL_USER: root
-      MYSQL_PASSWORD: p@554my5ql@dm1n
+      POSTGRES_PASSWORD: rub1xc0r3
   adminer:
     image: adminer
     restart: always
