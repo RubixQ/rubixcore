@@ -20,6 +20,12 @@
   version = "v3.3.2"
 
 [[projects]]
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  revision = "d523deb1b23d913de5bdada721a6071e71283618"
+  version = "v1.4.0"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
@@ -111,6 +117,12 @@
   version = "v1.8.0"
 
 [[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "v1"
   name = "gopkg.in/bsm/ratelimit.v1"
   packages = ["."]
@@ -145,6 +157,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "21e8d19d2d096a7e03dc458563dc766b2fd3593aaf5f5d7fc734f17abb8c7cf7"
+  inputs-digest = "293344895755bb6aa4f67d3629419c20a0ab6b2ae2c17b676c3f14f69c0c4f53"
   solver-name = "gps-cdcl"
   solver-version = 1

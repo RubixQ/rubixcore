@@ -12,5 +12,18 @@ services:
   redis:
     image: redis
   db:
-    image: mongo
+    image: mysql:latest
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: p@554my5ql@dm1n
+      MYSQL_DATABASE: flyawa
+      MYSQL_USER: root
+      MYSQL_PASSWORD: p@554my5ql@dm1n
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+     - 8080:8080
 
