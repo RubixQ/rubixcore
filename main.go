@@ -11,13 +11,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rubixq/rubixcore/pkg/db"
-
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"github.com/rubixq/rubixcore/pkg/api"
+	"github.com/rubixq/rubixcore/pkg/db"
 	"go.uber.org/zap"
 	"gopkg.in/redis.v4"
 )
