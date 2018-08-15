@@ -31,6 +31,7 @@ var Env = struct {
 	TicketResetInterval  int    `envconfig:"TICKET_RESET_INTERVAL" required:"true"`
 	JWTIssuer            string `envconfig:"JWT_ISSUER" required:"true"`
 	JWTSecret            string `envconfig:"JWT_SECRET" required:"true"`
+	DefaultAdminFullname string `envconfig:"DEFAULT_ADMIN_FULLNAME" required:"true"`
 	DefaultAdminUsername string `envconfig:"DEFAULT_ADMIN_USERNAME" required:"true"`
 	DefaultAdminPassword string `envconfig:"DEFAULT_ADMIN_PASSWORD" required:"true"`
 }{}
@@ -71,7 +72,7 @@ func main() {
 	}
 	defer database.Close()
 
-	err = db.InitDB(database, logger)
+	err = db.InitDB(database, logger, Env.DefaultAdminFullname, Env.DefaultAdminUsername, Env.DefaultAdminPassword)
 	if err != nil {
 		logger.Fatal("failed initializing db", zap.Error(err))
 	}

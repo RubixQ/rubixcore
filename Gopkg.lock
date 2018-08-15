@@ -20,12 +20,6 @@
   version = "v3.3.2"
 
 [[projects]]
-  name = "github.com/go-sql-driver/mysql"
-  packages = ["."]
-  revision = "d523deb1b23d913de5bdada721a6071e71283618"
-  version = "v1.4.0"
-
-[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
@@ -126,10 +120,13 @@
   version = "v1.8.0"
 
 [[projects]]
-  name = "google.golang.org/appengine"
-  packages = ["cloudsql"]
-  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
-  version = "v1.1.0"
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = [
+    "bcrypt",
+    "blowfish"
+  ]
+  revision = "de0752318171da717af4ce24d0a2e8626afaeb11"
 
 [[projects]]
   branch = "v1"
@@ -166,6 +163,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fae306de3d9477d2e5c426b2295f2f6d1afee7c4a10efa385af72dad2c3a2183"
+  inputs-digest = "445184d1d5b682294d10eb7b02d61989e2e736d00c6478855f00cbef9e0957bf"
   solver-name = "gps-cdcl"
   solver-version = 1

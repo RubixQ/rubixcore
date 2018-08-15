@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -119,8 +120,25 @@ func createCustomersMsisdnIndex(db *sql.DB, logger *zap.Logger) error {
 	return nil
 }
 
+func createSystemAdminUser(db *sql.DB, logger *zap.Logger, fullname, username, password string) error {
+	sql := "INSERT INTO system_users (fullname, username, password, is_admin, is_active) VALUES($1, $2, $3, $4, $5);"
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("creating default admin user", zap.String("fullname", fullname))
+	_, err = db.Exec(sql, username, fullname, hashedPassword, true, true)
+	if err != nil {
+		return err
+	}
+	logger.Info("successfully created default admin user")
+
+	return nil
+}
+
 // InitDB sets db contraints and indexes
-func InitDB(db *sql.DB, logger *zap.Logger) error {
+func InitDB(db *sql.DB, logger *zap.Logger, adminFullname, adminUsername, adminPass string) error {
 	err := createUsersTable(db, logger)
 	if err != nil {
 		return err
@@ -142,6 +160,11 @@ func InitDB(db *sql.DB, logger *zap.Logger) error {
 	}
 
 	err = createCustomersMsisdnIndex(db, logger)
+	if err != nil {
+		return err
+	}
+
+	err = createSystemAdminUser(db, logger, adminFullname, adminUsername, adminPass)
 	if err != nil {
 		return err
 	}
