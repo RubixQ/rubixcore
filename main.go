@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/rubixq/rubixcore/pkg/db"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
@@ -58,16 +60,21 @@ func main() {
 		logger.Info("application configuration loaded successfully")
 	}
 
-	db, err := sql.Open("postgres", Env.PostgresDSN)
+	database, err := sql.Open("postgres", Env.PostgresDSN)
 	if err != nil {
 		logger.Fatal("failed preparing db abstraction", zap.Error(err))
 	}
 
-	err = db.Ping()
+	err = database.Ping()
 	if err != nil {
 		logger.Fatal("failed pinging underlying db", zap.Error(err))
 	}
-	defer db.Close()
+	defer database.Close()
+
+	err = db.InitDB(database, logger)
+	if err != nil {
+		logger.Fatal("failed initializing db", zap.Error(err))
+	}
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
@@ -83,7 +90,7 @@ func main() {
 	logger.Info("redis connection setup successfully", zap.Any("ping", pong))
 
 	upgrader := &websocket.Upgrader{}
-	app := api.NewApp(db, client, logger, upgrader, Env.JWTIssuer, Env.JWTSecret)
+	app := api.NewApp(database, client, logger, upgrader, Env.JWTIssuer, Env.JWTSecret)
 	router := app.Router()
 
 	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", Env.Port))
