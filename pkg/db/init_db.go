@@ -1,8 +1,9 @@
 package db
 
 import (
-	"database/sql"
+	"time"
 
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,7 +15,7 @@ const (
 	usersCollectionName     string = "users"
 )
 
-func createUsersTable(db *sql.DB, logger *zap.Logger) error {
+func createUsersTable(db *sqlx.DB, logger *zap.Logger) error {
 	sql := `
 	CREATE TABLE IF NOT EXISTS system_users(
 		id 			SERIAL PRIMARY KEY,
@@ -23,9 +24,8 @@ func createUsersTable(db *sql.DB, logger *zap.Logger) error {
 		password 	VARCHAR(255) NOT NULL,
 		is_admin 	BOOLEAN NOT NULL,
 		is_active 	BOOLEAN NOT NULL,
-		created_by  INTEGER REFERENCES system_users (id),
 		created_at 	TIMESTAMPTZ DEFAULT Now(),
-		updated_at 	TIMESTAMPTZ
+		updated_at 	TIMESTAMPTZ DEFAULT Now()
 	);
 	`
 	logger.Info("creating system_users table")
@@ -38,7 +38,7 @@ func createUsersTable(db *sql.DB, logger *zap.Logger) error {
 	return nil
 }
 
-func createQueuesTable(db *sql.DB, logger *zap.Logger) error {
+func createQueuesTable(db *sqlx.DB, logger *zap.Logger) error {
 	sql := `
 	CREATE TABLE IF NOT EXISTS queues(
 		id 			 	SERIAL PRIMARY KEY,
@@ -48,7 +48,7 @@ func createQueuesTable(db *sql.DB, logger *zap.Logger) error {
 		is_active 		BOOLEAN NOT NULL,
 		created_by  	INTEGER REFERENCES system_users (id),
 		created_at 		TIMESTAMPTZ DEFAULT Now(),
-		updated_at 		TIMESTAMPTZ
+		updated_at 		TIMESTAMPTZ DEFAULT Now()
 	);
 	`
 	logger.Info("creating queues table")
@@ -61,7 +61,7 @@ func createQueuesTable(db *sql.DB, logger *zap.Logger) error {
 	return nil
 }
 
-func createCustomersTable(db *sql.DB, logger *zap.Logger) error {
+func createCustomersTable(db *sqlx.DB, logger *zap.Logger) error {
 	sql := `
 	CREATE TABLE IF NOT EXISTS customers(
 		id 			 	SERIAL PRIMARY KEY,
@@ -71,7 +71,7 @@ func createCustomersTable(db *sql.DB, logger *zap.Logger) error {
 		served_at 		TIMESTAMPTZ,
 		served_by		INTEGER REFERENCES system_users (id),
 		created_at 		TIMESTAMPTZ DEFAULT Now(),
-		updated_at 		TIMESTAMPTZ
+		updated_at 		TIMESTAMPTZ DEFAULT Now()
 	);
 	`
 	logger.Info("creating queues table")
@@ -84,7 +84,7 @@ func createCustomersTable(db *sql.DB, logger *zap.Logger) error {
 	return nil
 }
 
-func createSettingsTable(db *sql.DB, logger *zap.Logger) error {
+func createSettingsTable(db *sqlx.DB, logger *zap.Logger) error {
 	sql := `
 	CREATE TABLE IF NOT EXISTS settings(
 		id 			SERIAL PRIMARY KEY,
@@ -92,7 +92,7 @@ func createSettingsTable(db *sql.DB, logger *zap.Logger) error {
 		value 		VARCHAR(255) NOT NULL,
 		created_by  INTEGER REFERENCES system_users (id),
 		created_at 	TIMESTAMPTZ DEFAULT Now(),
-		updated_at 	TIMESTAMPTZ
+		updated_at 	TIMESTAMPTZ DEFAULT Now()
 	);
 	`
 	logger.Info("creating settings table")
@@ -105,7 +105,7 @@ func createSettingsTable(db *sql.DB, logger *zap.Logger) error {
 	return nil
 }
 
-func createCustomersMsisdnIndex(db *sql.DB, logger *zap.Logger) error {
+func createCustomersMsisdnIndex(db *sqlx.DB, logger *zap.Logger) error {
 	sql := `
 	CREATE INDEX IF NOT EXISTS customers_msisdn_index
 	ON customers (msisdn);
@@ -120,15 +120,15 @@ func createCustomersMsisdnIndex(db *sql.DB, logger *zap.Logger) error {
 	return nil
 }
 
-func createSystemAdminUser(db *sql.DB, logger *zap.Logger, fullname, username, password string) error {
-	sql := "INSERT INTO system_users (fullname, username, password, is_admin, is_active) VALUES($1, $2, $3, $4, $5);"
+func createSystemAdminUser(db *sqlx.DB, logger *zap.Logger, fullname, username, password string) error {
+	sql := "INSERT INTO system_users (fullname, username, password, is_admin, is_active, created_at) VALUES($1, $2, $3, $4, $5, $6);"
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
 	logger.Info("creating default admin user", zap.String("fullname", fullname))
-	_, err = db.Exec(sql, username, fullname, hashedPassword, true, true)
+	_, err = db.Exec(sql, fullname, username, string(hashedPassword), true, true, time.Now())
 	if err != nil {
 		return err
 	}
@@ -137,8 +137,8 @@ func createSystemAdminUser(db *sql.DB, logger *zap.Logger, fullname, username, p
 	return nil
 }
 
-// InitDB sets db contraints and indexes
-func InitDB(db *sql.DB, logger *zap.Logger, adminFullname, adminUsername, adminPass string) error {
+// InitDB creates tables, sets constraints, sets indexes, and seeds appropriate tables
+func InitDB(db *sqlx.DB, logger *zap.Logger, adminFullname, adminUsername, adminPass string) error {
 	err := createUsersTable(db, logger)
 	if err != nil {
 		return err

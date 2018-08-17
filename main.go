@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net"
 	"net/http"
@@ -11,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/websocket"
+	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"github.com/rubixq/rubixcore/pkg/api"
@@ -60,7 +59,7 @@ func main() {
 		logger.Info("application configuration loaded successfully")
 	}
 
-	database, err := sql.Open("postgres", Env.PostgresDSN)
+	database, err := sqlx.Open("postgres", Env.PostgresDSN)
 	if err != nil {
 		logger.Fatal("failed preparing db abstraction", zap.Error(err))
 	}
@@ -90,8 +89,8 @@ func main() {
 	logger.Info("redis connection setup successfully", zap.Any("ping", pong))
 
 	upgrader := &websocket.Upgrader{}
-	app := api.NewApp(database, client, logger, upgrader, Env.JWTIssuer, Env.JWTSecret)
-	router := app.Router()
+	resources := api.NewResources(database, logger, client, upgrader)
+	router := api.Router(resources)
 
 	listener, err := net.Listen("tcp4", fmt.Sprintf(":%d", Env.Port))
 	if err != nil {
@@ -106,7 +105,7 @@ func main() {
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
-		Handler:           handlers.CORS(handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"}))(router),
+		Handler:           router,
 	}
 
 	sigs := make(chan os.Signal, 1)
@@ -132,7 +131,7 @@ func main() {
 	go func() {
 		for range ticker.C {
 			logger.Info("resetting ticket numbering")
-			app.ResetTicketing()
+			//app.ResetTicketing()
 		}
 	}()
 

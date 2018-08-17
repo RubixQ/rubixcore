@@ -61,8 +61,6 @@ type App struct {
 func (a *App) Router() http.Handler {
 	r := chi.NewRouter()
 
-	r.Post("/auth", a.login())
-
 	r.Get("/users", a.requireJWTAuthentication(a.listUsers()))
 	r.Post("/users", a.requireJWTAuthentication(a.createUser()))
 
