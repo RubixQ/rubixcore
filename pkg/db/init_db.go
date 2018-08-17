@@ -121,14 +121,15 @@ func createCustomersMsisdnIndex(db *sqlx.DB, logger *zap.Logger) error {
 }
 
 func createSystemAdminUser(db *sqlx.DB, logger *zap.Logger, fullname, username, password string) error {
-	sql := "INSERT INTO system_users (fullname, username, password, is_admin, is_active, created_at) VALUES($1, $2, $3, $4, $5, $6);"
+	sql := "INSERT INTO system_users (fullname, username, password, is_admin, is_active, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6);"
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
 	logger.Info("creating default admin user", zap.String("fullname", fullname))
-	_, err = db.Exec(sql, fullname, username, string(hashedPassword), true, true, time.Now())
+	now := time.Now()
+	_, err = db.Exec(sql, fullname, username, string(hashedPassword), true, true, now, now)
 	if err != nil {
 		return err
 	}

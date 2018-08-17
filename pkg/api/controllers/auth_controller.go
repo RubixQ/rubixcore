@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/rubixq/rubixcore/pkg/api/repositories"
 	"go.uber.org/zap"
