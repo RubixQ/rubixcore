@@ -63,16 +63,16 @@ func (a *App) Router() http.Handler {
 
 	r.Post("/auth", a.login())
 
-	r.Get("/users", a.requireJWTAuthentication(a.listUsers()))
-	r.Post("/users", a.requireJWTAuthentication(a.createUser()))
+	r.Get("/users", a.listUsers())
+	r.Post("/users", a.createUser())
 
-	r.Get("/queues", a.requireJWTAuthentication(a.listQueues()))
-	r.Post("/queues", a.requireJWTAuthentication(a.createQueue()))
+	r.Get("/queues", a.listQueues())
+	r.Post("/queues", a.createQueue())
 
-	r.Get("/customers", a.requireJWTAuthentication(a.listCustomers()))
-	r.Post("/customers", a.requireJWTAuthentication(a.createCustomer()))
+	r.Get("/customers", a.listCustomers())
+	r.Post("/customers", a.createCustomer())
 
-	r.Post("/actions/next", a.requireJWTAuthentication(a.callNextCustomer()))
+	r.Post("/actions/next", a.callNextCustomer())
 
 	// r.Get("/kiosks/new", a.handleKioskSetup)
 	// r.Get("/counters/new", a.handleCounterSetup)
@@ -80,7 +80,7 @@ func (a *App) Router() http.Handler {
 	r.Get("/ws", a.handleCounterWebsocket)
 	r.Get("/voicews", a.handleVoiceWebsocket)
 
-	r.Handle("/metrics", a.requireJWTAuthentication(promhttp.Handler()))
+	r.Handle("/metrics", promhttp.Handler())
 
 	fileServer(r, "/static", http.Dir("./ui/static"))
 
